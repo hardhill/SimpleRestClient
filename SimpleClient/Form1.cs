@@ -20,12 +20,14 @@ namespace SimpleClient
             InitializeComponent();
         }
 
-        private async void GetDataFromService()
+        private async Task<TestList> GetDataFromService()
         {
+            string surl = "http://localhost:46592";
             Guid genstr = Guid.NewGuid();
             label1.Text = "";       // clear text befor get data
             string JsonString = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(genstr));
-            WebRequest request = WebRequest.Create("http://service.bielecki.ru/test");
+            WebRequest request = WebRequest.Create(surl);
+            request.Method = "POST";
             request.ContentType = "application/json";
             string query = $"msg=" + JsonString;
             byte[] contentBytes = Encoding.UTF8.GetBytes(query);
@@ -35,25 +37,40 @@ namespace SimpleClient
                 await stream.WriteAsync(contentBytes, 0, contentBytes.Length);
             }
             WebResponse response = await request.GetResponseAsync();
-            string answer = null;
+            string answerjson = null;
             using(Stream stream = response.GetResponseStream())
             {
                 using(StreamReader sr = new StreamReader(stream))
                 {
-                    answer = await sr.ReadToEndAsync();
+                    answerjson = await sr.ReadToEndAsync();
                 }
             }
-
-
+            response.Close();
+            var answerList = await Task.Factory.StartNew(()=>JsonConvert.DeserializeObject<TestList>(answerjson));
+            return answerList;
         }
-        private void Form1_Shown(object sender, EventArgs e)
+        private async void Form1_Shown(object sender, EventArgs e)
         {
-            GetDataFromService();
+            TestList testList = await GetDataFromService();
+            label1.Text = testList.tm;
+            label2.Text = testList.guid;
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            GetDataFromService();
+            Form1_Shown(sender, e);
         }
+    }
+
+    internal class TestList
+    {
+        [JsonProperty("status")]
+        public string msg { get; set; }
+
+        [JsonProperty("time")]
+        public string tm { get; set; }
+
+        [JsonProperty("guid")]
+        public string guid { get; set; }
     }
 }
