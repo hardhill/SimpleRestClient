@@ -29,7 +29,7 @@ namespace SimpleClient
             string JsonString = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(genstr));
             WebRequest request = WebRequest.Create(surd);
             request.Method = "POST";
-            request.ContentType = "application/json";
+            request.ContentType = "application/x-www-form-urlencoded";     //на этот сервис важно отправлять данные именно с таким типом контента     
             string query = $"msg={JsonString}";
             byte[] contentBytes = Encoding.UTF8.GetBytes(query);
             request.ContentLength = contentBytes.Length;
