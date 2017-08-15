@@ -23,15 +23,17 @@ namespace SimpleClient
         private async Task<TestList> GetDataFromService()
         {
             string surl = "http://localhost:46592";
+            string surd = "http://service.bielecki.ru/test/index.php";
             Guid genstr = Guid.NewGuid();
             label1.Text = "";       // clear text befor get data
             string JsonString = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(genstr));
-            WebRequest request = WebRequest.Create(surl);
+            WebRequest request = WebRequest.Create(surd);
             request.Method = "POST";
             request.ContentType = "application/json";
-            string query = $"msg=" + JsonString;
+            string query = $"msg={JsonString}";
             byte[] contentBytes = Encoding.UTF8.GetBytes(query);
             request.ContentLength = contentBytes.Length;
+            
             using (Stream stream = await request.GetRequestStreamAsync())
             {
                 await stream.WriteAsync(contentBytes, 0, contentBytes.Length);
